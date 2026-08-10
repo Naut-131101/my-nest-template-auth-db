@@ -1,42 +1,44 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
-  Delete,
+  Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UserRole } from '../common/enums/user-role.enum';
+import { ListUsersQueryDto } from './dto/list-users-query.dto';
+import { Roles } from '../common/decorators/roles.decorator';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly usersService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Get('me')
+  async getMe(@CurrentUser('id') userId: string) {
+    const user = await this.usersService.findByIdOrFail(userId);
+    return this.usersService.toView(user);
+  }
+
+  @Patch('me')
+  updateMe(@CurrentUser('id') userId: string, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(userId, dto);
   }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Roles(UserRole.ADMIN)
+  list(@Query() query: ListUsersQueryDto) {
+    return this.usersService.list(query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Roles(UserRole.ADMIN)
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const user = await this.usersService.findByIdOrFail(id);
+    return this.usersService.toView(user);
   }
 }
