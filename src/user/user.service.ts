@@ -10,11 +10,11 @@ import { UserRole } from '../common/enums/user-role.enum';
 import { User } from './entities/user.entity';
 import { CreateUserData, UserView } from './users.types';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm/browser/repository/Repository.js';
 import { UserStatus } from '../common/enums/user-status.enum';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
-import { Brackets } from 'typeorm/browser/query-builder/Brackets.js';
+import { Brackets } from 'typeorm';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
